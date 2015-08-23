@@ -12,8 +12,12 @@ import (
 
 var cmds []*cobra.Command
 
+var BASE_URL = "http://127.0.0.1:8080/"
+
+var API_VERSION = "1"
+
 func APIGet(path string) string {
-	resp, err := http.Get("http://127.0.0.1:8080/" + path)
+	resp, err := http.Get(BASE_URL + API_VERSION + "/" + path)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -28,7 +32,7 @@ func APIGet(path string) string {
 }
 
 func APIPost(path string, payload string) {
-	_, err := http.Post("http://127.0.0.1:8080/"+path,
+	_, err := http.Post(BASE_URL+API_VERSION+"/"+path,
 		"text/plain",
 		bytes.NewBufferString(payload))
 	if err != nil {
