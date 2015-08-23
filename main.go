@@ -2,41 +2,49 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
+var cmds []*cobra.Command
+
+func APIGet(path string) string {
+	resp, err := http.Get("http://127.0.0.1:8080/" + path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return string(body)
+}
+
+func APIPost(path string, payload string) {
+	_, err := http.Post("http://127.0.0.1:8080/"+path,
+		"text/plain",
+		bytes.NewBufferString(payload))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 func main() {
-	flag.Parse()
-	switch {
-	case flag.Arg(0) == "hostname":
-		if len(flag.Args()) == 2 {
-			_, err := http.Post("http://127.0.0.1:8080/hostname", "text/plain", bytes.NewBufferString(flag.Arg(1)))
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-		} else if len(flag.Args()) == 1 {
-			// handle sets
-			// handle gets
-			resp, err := http.Get("http://127.0.0.1:8080/hostname")
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-			fmt.Printf("%s", string(body))
-		} else {
-			log.Fatal("Usage: " + os.Args[0] + " hostname <new hostname>")
-		}
-	default:
-		log.Fatal("Usage: " + os.Args[0] + " <command>\nhostname: set hostname")
+	var rootCmd = &cobra.Command{
+		Use:  os.Args[0],
+		Long: "Control application for PCD API",
 	}
 
+	for cmd := range cmds {
+		rootCmd.AddCommand(cmds[cmd])
+	}
+	rootCmd.Execute()
 }
