@@ -1,5 +1,6 @@
 ifndef GOPATH
-	GOPATH := gopath
+	GOPATH := ${PWD}/gopath
+	export GOPATH
 endif
 
 pcd-ctl: *.go ${GOPATH}/src/github.com/spf13/cobra
